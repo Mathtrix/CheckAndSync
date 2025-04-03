@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthService {
-  static const String baseUrl = 'https://checkandsync-backend.onrender.com/api';
+  static const String baseUrl = 'https://checkandsync-backend.onrender.com/api/auth';
   static final _storage = FlutterSecureStorage();
 
   static Future<List<Map<String, dynamic>>?> fetchLists() async {
