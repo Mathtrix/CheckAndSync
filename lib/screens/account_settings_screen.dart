@@ -6,6 +6,7 @@ import '../services/payment_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
+import 'dart:async';
 
 
 
@@ -20,6 +21,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   final _storage = const FlutterSecureStorage();
   String _username = '';
   String _email = '';
+  bool _isPremium = false;
 
   @override
   void initState() {
@@ -129,11 +131,14 @@ Future<void> _upgradeToPremium() async {
     await PaymentService.createCheckoutSession();
 
     // Start periodic polling every 5 seconds
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
+    Timer? pollingTimer;
+    pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       final premium = await AuthService.isPremiumUser();
       if (premium) {
         timer.cancel();
-        setState(() => _isPremium = true);
+        setState(() {
+          _isPremium = true;
+        });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('🎉 Premium features unlocked!')),
@@ -150,6 +155,7 @@ Future<void> _upgradeToPremium() async {
     }
   }
 }
+
 
 
   void _deleteAccount() {
