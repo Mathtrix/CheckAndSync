@@ -15,8 +15,8 @@ exports.createCheckoutSession = async (req, res) => {
           quantity: 1,
         },
       ],
-      //success_url: 'https://check-and-sync.onrender.com/payment-success',
-      //cancel_url: 'https://check-and-sync.onrender.com/payment-cancelled',
+      success_url: 'https://check-and-sync.onrender.com/payment-success',
+      cancel_url: 'https://check-and-sync.onrender.com/payment-cancelled',
     });
 
     res.json({ url: session.url });
