@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class PaymentService {
   static Future<void> createCheckoutSession() async {
-    final url = Uri.parse('http://192.168.86.226:4000/api/create-checkout-session');
+    final url = Uri.parse('https://check-and-sync.onrender.com/api/create-checkout-session');
     final response = await http.post(url);
 
     if (response.statusCode != 200) {
