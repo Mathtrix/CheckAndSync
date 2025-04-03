@@ -1,6 +1,9 @@
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const User = require('../models/user.model'); // Adjust path if necessary
+const User = require('../models/user.model'); // Adjust the path as needed
+const db = require('../config/db');
 
 exports.createCheckoutSession = async (req, res) => {
   try {
@@ -24,33 +27,50 @@ exports.createCheckoutSession = async (req, res) => {
   }
 };
 
-exports.handleWebhook = (req, res) => {
+const handleCheckoutSessionCompleted = async (session) => {
+  const customerId = session.customer;
+
+  try {
+    const [result] = await db.query(
+      'UPDATE users SET isPremium = TRUE WHERE stripeCustomerId = ?',
+      [customerId]
+    );
+
+    if (result.affectedRows > 0) {
+      console.log(`✅ Upgraded user with Stripe customer ID ${customerId} to premium`);
+    } else {
+      console.warn(`⚠️ No user found for Stripe customer ID ${customerId}`);
+    }
+  } catch (error) {
+    console.error('❌ Error updating premium status:', error);
+  }
+};
+
+exports.handleWebhook = async (req, res) => {
   const sig = req.headers['stripe-signature'];
 
   let event;
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    console.error('❌ Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle different event types
   switch (event.type) {
     case 'checkout.session.completed':
-      const session = event.data.object;
-      console.log('✅ Checkout session completed:', session);
-      // TODO: Handle post-checkout logic (e.g., mark user as subscribed)
+      console.log('📬 Received checkout.session.completed');
+      await handleCheckoutSessionCompleted(event.data.object);
       break;
 
     case 'customer.subscription.created':
+      console.log('📬 Received customer.subscription.created');
       const subscription = event.data.object;
       console.log('📦 Subscription created:', subscription);
-      // TODO: Save subscription status
       break;
 
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      console.log(`⚠️ Unhandled event type ${event.type}`);
   }
 
   res.json({ received: true });

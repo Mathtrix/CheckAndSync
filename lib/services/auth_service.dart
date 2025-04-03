@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://192.168.86.226:4000/api';
+  static const String baseUrl = 'https://checkandsync-backend.onrender.com/api';
   static final _storage = FlutterSecureStorage();
 
   static Future<List<Map<String, dynamic>>?> fetchLists() async {
@@ -128,4 +128,29 @@ class AuthService {
       return false;
     }
   }
+  
+static Future<bool> isPremiumUser() async {
+  try {
+    final token = await getToken();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/status'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['isPremium'] == true;
+    } else {
+      debugPrint('❌ Failed to fetch premium status: ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    debugPrint('❌ Exception in isPremiumUser: $e');
+    return false;
+  }
+}
+
 }

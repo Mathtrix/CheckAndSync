@@ -3,15 +3,15 @@ const bcryptjs = require('bcryptjs');
 
 const SALT_ROUNDS = 12;
 
-async function createUser({ username, email, password }) {
+async function createUser({ username, email, password, stripeCustomerId = null }) {
   const hashed = await bcryptjs.hash(password, SALT_ROUNDS);
-  const result = await db.query(
-    `INSERT INTO users (username, email, password_hash)
-     VALUES (?, ?, ?)`,
-    [username, email, hashed]
+  await db.query(
+    `INSERT INTO users (username, email, password_hash, stripeCustomerId)
+     VALUES (?, ?, ?, ?)`,
+    [username, email, hashed, stripeCustomerId]
   );
   const [user] = await db.query(
-    `SELECT id, username, email FROM users WHERE email = ?`,
+    `SELECT id, username, email, stripeCustomerId, isPremium FROM users WHERE email = ?`,
     [email]
   );
   return user;

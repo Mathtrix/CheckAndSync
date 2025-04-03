@@ -125,23 +125,29 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 Future<void> _upgradeToPremium() async {
   debugPrint('Upgrade button pressed');
 
-  if (Platform.isAndroid) {
-    debugPrint('Google Play Billing not implemented yet.');
-  } else if (Platform.isIOS || Platform.isMacOS) {
-    debugPrint('Apple In-App Purchase not implemented yet.');
-  } else if (kIsWeb || Platform.isWindows || Platform.isLinux) {
-    try {
-      await PaymentService.createCheckoutSession();
-    } catch (e) {
-      debugPrint('Error during checkout: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to initiate payment')),
-        );
+  try {
+    await PaymentService.createCheckoutSession();
+
+    // Start periodic polling every 5 seconds
+    Timer.periodic(const Duration(seconds: 5), (timer) async {
+      final premium = await AuthService.isPremiumUser();
+      if (premium) {
+        timer.cancel();
+        setState(() => _isPremium = true);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('🎉 Premium features unlocked!')),
+          );
+        }
       }
+    });
+  } catch (e) {
+    debugPrint('Error during checkout: $e');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to initiate payment')),
+      );
     }
-  } else {
-    debugPrint('Unsupported platform for payment');
   }
 }
 
