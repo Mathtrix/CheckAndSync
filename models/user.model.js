@@ -1,10 +1,10 @@
 const db = require('../config/db');
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 
 const SALT_ROUNDS = 12;
 
 async function createUser({ username, email, password }) {
-  const hashed = await bcrypt.hash(password, SALT_ROUNDS);
+  const hashed = await bcryptjs.hash(password, SALT_ROUNDS);
   const result = await db.query(
     `INSERT INTO users (username, email, password_hash)
      VALUES (?, ?, ?)`,
@@ -34,7 +34,7 @@ async function findUserByUsername(username) {
 }
 
 async function validatePassword(user, inputPassword) {
-  return bcrypt.compare(inputPassword, user.password_hash);
+  return bcryptjs.compare(inputPassword, user.password_hash);
 }
 
 module.exports = {
