@@ -2,7 +2,6 @@ const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const User = require('../models/user.model'); // Adjust path if necessary
-const User = require('../models/user.model'); // Adjust the path as needed
 const db = require('../config/db');
 
 exports.createCheckoutSession = async (req, res) => {
